@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MqttJs", "MqttJs.csproj", "{5B858E49-39EA-4617-8B7D-C9EF3A983F37}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B858E49-39EA-4617-8B7D-C9EF3A983F37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B858E49-39EA-4617-8B7D-C9EF3A983F37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B858E49-39EA-4617-8B7D-C9EF3A983F37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B858E49-39EA-4617-8B7D-C9EF3A983F37}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {27147323-FFD1-4D7A-BF67-F54A6D6DB48F}
+	EndGlobalSection
+EndGlobal
