@@ -22,29 +22,5 @@ namespace MqttJs.Properties {
                 return defaultInstance;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("200, 100")]
-        public global::System.Drawing.Point WindowLocation {
-            get {
-                return ((global::System.Drawing.Point)(this["WindowLocation"]));
-            }
-            set {
-                this["WindowLocation"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("600, 500")]
-        public global::System.Drawing.Size WindowSize {
-            get {
-                return ((global::System.Drawing.Size)(this["WindowSize"]));
-            }
-            set {
-                this["WindowSize"] = value;
-            }
-        }
     }
 }

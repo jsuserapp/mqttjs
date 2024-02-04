@@ -100,17 +100,58 @@ namespace MqttJs {
 			return null;
 		}
 	}
-
+	public class Rectangle {
+		public int x, y, width, height = 0;
+		public Rectangle() {
+		}
+		public Rectangle(int x, int y, int w, int h) {
+			this.x = x;
+			this.y = y;
+			this.width = w;
+			this.height = h;
+		}
+		public void SetValue(int x, int y, int w, int h) {
+			this.x = x;
+			this.y = y;
+			this.width = w;
+			this.height = h;
+		}
+		public void SetValue(Point location, Size size) {
+			this.x = location.X;
+			this.y = location.Y;
+			this.width = size.Width;
+			this.height = size.Height;
+		}
+		public Size Size() {
+			return new Size(width, height);
+		}
+		public Point Location() {
+			return new Point(x, y);
+		}
+	}
+	public class UIState {
+		[YamlMember(Alias = "form_rect")]
+		public Rectangle FormRect;
+		[YamlMember(Alias = "auto_json")]
+		public bool AutoJson;
+		public UIState() {
+			FormRect = new Rectangle(300, 200, 800, 500);
+			AutoJson = true;
+		}
+	}
 	internal class ConfigYaml {
 		private static readonly string confFile = "conf.yaml";
 		private static ConfigYaml? instance;
 
+		[YamlMember(Alias = "ui_state")]
+		public UIState UIState;
 		[YamlMember(Alias = "server_list")]
 		public List<MqttServer> ServerList {
 			get; set;
 		}
 
 		public ConfigYaml() {
+			UIState = new UIState();
 			ServerList = [];
 		}
 		public void AddServer(MqttServer server) {
@@ -145,7 +186,8 @@ namespace MqttJs {
 				instance = deserializer.Deserialize<ConfigYaml>(reader);
 				return instance;
 
-			} catch (Exception) {
+			} catch (Exception e) {
+				MessageBox.Show(e.Message);
 			}
 			return new ConfigYaml();
 		}

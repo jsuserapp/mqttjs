@@ -9,6 +9,7 @@ using YamlDotNet.Serialization;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using MQTTnet.Server;
+using System.ComponentModel;
 //using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace MqttJs {
@@ -22,19 +23,22 @@ namespace MqttJs {
 		}
 
 		private async void FormMain_FormClosing(object sender, FormClosingEventArgs e) {
-			Properties.Settings.Default.WindowLocation = Location;
-			Properties.Settings.Default.WindowSize = Size;
-			Properties.Settings.Default.Save();
-
 			var conf = ConfigYaml.GetInstance();
+			conf.UIState.FormRect.SetValue(Location, Size);
+			conf.UIState.AutoJson = cbAutoJson.Checked;
+			ConfigYaml.Save();
 			foreach (MqttServer server in conf.ServerList) {
 				await DisconnectMqttAsync(server);
 			}
 		}
 
 		private void FormMain_Load(object sender, EventArgs e) {
-			Location = Properties.Settings.Default.WindowLocation;
-			Size = Properties.Settings.Default.WindowSize;
+			var conf = ConfigYaml.GetInstance();
+
+			var rect  = conf.UIState.FormRect;
+			Size = rect.Size();
+			Location = rect.Location();
+			cbAutoJson.Checked = conf.UIState.AutoJson;
 
 			ServerList.LoadNodes(mqttServerMenu, subscribeMenu);
 			ServerList.SetNodeState();
@@ -191,15 +195,15 @@ namespace MqttJs {
 				await mqttClient.ConnectAsync(options);
 				server.Mqtt.State = ServerState.ÒÑÁ¬½Ó;
 				server.Mqtt.Client = mqttClient;
-				mqttClient.ApplicationMessageReceivedAsync += e =>{
-					OnMqttMessage(server,e.ApplicationMessage.Topic,Lib.SegmentToArray(e.ApplicationMessage.PayloadSegment));
+				mqttClient.ApplicationMessageReceivedAsync += e => {
+					OnMqttMessage(server, e.ApplicationMessage.Topic, Lib.SegmentToArray(e.ApplicationMessage.PayloadSegment));
 					return Task.CompletedTask;
 				};
 				uiTask?.Post(_ => {
 					SetServerState(server, true);
 				}, null);
-				foreach(MqttSubscribe sub in server.SubscribeList) {
-					if(!sub.Enabled) {
+				foreach (MqttSubscribe sub in server.SubscribeList) {
+					if (!sub.Enabled) {
 						continue;
 					}
 					await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(sub.Topic)
@@ -216,16 +220,16 @@ namespace MqttJs {
 				return false;
 			}
 		}
-		private void OnMqttMessage(MqttServer server,string topic, byte[] data) {
+		private void OnMqttMessage(MqttServer server, string topic, byte[] data) {
 			var str = "";
 			var code = "";
-			if (Lib.IsUTF8Bytes(data)) {
-				str = System.Text.Encoding.UTF8.GetString(data);
-				code = "utf8";
-			} else if (Lib.IsGB2312(data)) {
+			if (Lib.IsGB2312(data)) {
 				Encoding gb2312 = Encoding.GetEncoding("gb2312");
 				str = gb2312.GetString(data);
 				code = "gb2312";
+			} else if (Lib.IsUTF8Bytes(data)) {
+				str = System.Text.Encoding.UTF8.GetString(data);
+				code = "utf8";
 			} else {
 				str = BitConverter.ToString(data).Replace("-", "");
 				code = "hex";
@@ -242,22 +246,45 @@ namespace MqttJs {
 			}
 			DateTime now = DateTime.Now;
 			string date = now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+			string txt = "";
+			if (cbAutoJson.Checked) {
+				try {
+					txt = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(str), jsonOption) + "\r\n";
+					code += " | json";
+				}catch(Exception) {
+					txt = str + "\r\n";
+				}
+			} else {
+				txt = str + "\r\n";
+			}
 			string title = $"[{date} | {sub.Topic} | {code}]";
-			string txt = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(str), jsonOption) + "\r\n";
 			uiTask?.Post(_ => {
-				AppendToMsgBox(title, Color.Green);
-				AppendToMsgBox(txt, textColor);
+				AppendToMsgBox(title, textColor, true);
+				AppendToMsgBox(txt, textColor, false);
 			}, null);
 		}
-		private void AppendToMsgBox(string str,Color color) {
-			//float textSize = 12;
-			//MsgBox.SelectionFont = new Font(MsgBox.Font.FontFamily, textSize);
+		private static Font? BoldFont, NormalFont;
+		private void AppendToMsgBox(string str, Color color, bool bold, bool leftAlign = true) {
 			MsgBox.SelectionStart = MsgBox.TextLength;
 			MsgBox.SelectionLength = 0;
 
 			MsgBox.SelectionColor = color;
-			MsgBox.AppendText(str+"\r\n");
+			if (leftAlign) {
+				MsgBox.SelectionAlignment = HorizontalAlignment.Left;
+			} else {
+				MsgBox.SelectionAlignment = HorizontalAlignment.Right;
+			}
+			if (bold) {
+				BoldFont ??= new Font(MsgBox.Font, FontStyle.Bold);
+				NormalFont ??= new Font(MsgBox.Font, FontStyle.Regular);
+				MsgBox.SelectionFont = BoldFont;
+				MsgBox.AppendText(str + "\r\n");
+				MsgBox.SelectionFont = NormalFont;
+			} else {
+				MsgBox.AppendText(str + "\r\n");
+			}
 		}
+
 		public async Task DisconnectMqttAsync(MqttServer server) {
 			var mqttClient = server.Mqtt.Client;
 			if (mqttClient != null && mqttClient.IsConnected) {
@@ -275,7 +302,7 @@ namespace MqttJs {
 			} catch (Exception) {
 			}
 		}
-		private static async void SubscribeTopic(MQTTnet.Client.IMqttClient mqttClient, string topic,int qos) {
+		private static async void SubscribeTopic(MQTTnet.Client.IMqttClient mqttClient, string topic, int qos) {
 			try {
 				await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic)
 					.WithQualityOfServiceLevel((MQTTnet.Protocol.MqttQualityOfServiceLevel)qos)
@@ -294,6 +321,30 @@ namespace MqttJs {
 					ServerControl();
 				}
 			}
+		}
+
+		private void CopyMenuItem_Click(object sender, EventArgs e) {
+			if (TextBoxMenu.SourceControl is RichTextBox richTextBox) {
+				richTextBox.Copy();
+			}
+		}
+		private void PasteMenuItem_Click(object sender, EventArgs e) {
+			if (TextBoxMenu.SourceControl is RichTextBox richTextBox) {
+				richTextBox.Paste();
+			}
+		}
+		private void CutMenuItem_Click(object sender, EventArgs e) {
+			if (TextBoxMenu.SourceControl is RichTextBox richTextBox) {
+				richTextBox.Cut();
+			}
+		}
+
+		private void TextBoxMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e) {
+			bool hasSelectedText = TextBoxMenu.SourceControl is RichTextBox richTextBox && !string.IsNullOrEmpty(richTextBox.SelectedText);
+			CutMenuItem.Enabled = hasSelectedText;
+			CopyMenuItem.Enabled = hasSelectedText;
+
+			PasteMenuItem.Enabled = Clipboard.ContainsText();
 		}
 	}
 }

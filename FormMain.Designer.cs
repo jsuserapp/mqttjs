@@ -26,11 +26,16 @@
 			components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
 			MsgBox = new RichTextBox();
+			TextBoxMenu = new ContextMenuStrip(components);
+			CopyMenuItem = new ToolStripMenuItem();
+			CutMenuItem = new ToolStripMenuItem();
+			PasteMenuItem = new ToolStripMenuItem();
 			BtnAddServer = new Button();
 			groupServer = new GroupBox();
 			ServerList = new MyTreeView();
 			treeImages = new ImageList(components);
 			groupMessage = new GroupBox();
+			cbAutoJson = new CheckBox();
 			btnConn = new Button();
 			labServer = new Label();
 			checkPersident = new CheckBox();
@@ -56,6 +61,7 @@
 			删除订阅ToolStripMenuItem = new ToolStripMenuItem();
 			toolStripMenuItem3 = new ToolStripSeparator();
 			启用禁用ToolStripMenuItem = new ToolStripMenuItem();
+			TextBoxMenu.SuspendLayout();
 			groupServer.SuspendLayout();
 			groupMessage.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)splitMessage).BeginInit();
@@ -70,13 +76,41 @@
 			// 
 			MsgBox.BackColor = Color.White;
 			MsgBox.BorderStyle = BorderStyle.FixedSingle;
+			MsgBox.ContextMenuStrip = TextBoxMenu;
 			MsgBox.Dock = DockStyle.Fill;
 			MsgBox.Location = new Point(0, 0);
 			MsgBox.Name = "MsgBox";
-			MsgBox.ReadOnly = true;
-			MsgBox.Size = new Size(672, 274);
+			MsgBox.Size = new Size(672, 238);
 			MsgBox.TabIndex = 0;
 			MsgBox.Text = "";
+			// 
+			// TextBoxMenu
+			// 
+			TextBoxMenu.Items.AddRange(new ToolStripItem[] { CopyMenuItem, CutMenuItem, PasteMenuItem });
+			TextBoxMenu.Name = "TextBoxMenu";
+			TextBoxMenu.Size = new Size(101, 70);
+			TextBoxMenu.Opening += TextBoxMenu_Opening;
+			// 
+			// CopyMenuItem
+			// 
+			CopyMenuItem.Name = "CopyMenuItem";
+			CopyMenuItem.Size = new Size(100, 22);
+			CopyMenuItem.Text = "复制";
+			CopyMenuItem.Click += CopyMenuItem_Click;
+			// 
+			// CutMenuItem
+			// 
+			CutMenuItem.Name = "CutMenuItem";
+			CutMenuItem.Size = new Size(100, 22);
+			CutMenuItem.Text = "剪切";
+			CutMenuItem.Click += CutMenuItem_Click;
+			// 
+			// PasteMenuItem
+			// 
+			PasteMenuItem.Name = "PasteMenuItem";
+			PasteMenuItem.Size = new Size(100, 22);
+			PasteMenuItem.Text = "粘贴";
+			PasteMenuItem.Click += PasteMenuItem_Click;
 			// 
 			// BtnAddServer
 			// 
@@ -132,6 +166,7 @@
 			// 
 			groupMessage.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			groupMessage.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			groupMessage.Controls.Add(cbAutoJson);
 			groupMessage.Controls.Add(btnConn);
 			groupMessage.Controls.Add(labServer);
 			groupMessage.Controls.Add(checkPersident);
@@ -148,6 +183,20 @@
 			groupMessage.TabIndex = 6;
 			groupMessage.TabStop = false;
 			groupMessage.Text = "消息";
+			// 
+			// cbAutoJson
+			// 
+			cbAutoJson.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			cbAutoJson.AutoSize = true;
+			cbAutoJson.Checked = true;
+			cbAutoJson.CheckState = CheckState.Checked;
+			cbAutoJson.Location = new Point(496, 41);
+			cbAutoJson.Name = "cbAutoJson";
+			cbAutoJson.Size = new Size(119, 21);
+			cbAutoJson.TabIndex = 16;
+			cbAutoJson.Text = "自动格式化JSON";
+			toolTip.SetToolTip(cbAutoJson, "如果接收到的数据是 JSON 格式,自动格式化以便于阅读");
+			cbAutoJson.UseVisualStyleBackColor = true;
 			// 
 			// btnConn
 			// 
@@ -278,16 +327,17 @@
 			// 
 			splitMessage.Panel2.Controls.Add(sendBox);
 			splitMessage.Size = new Size(672, 567);
-			splitMessage.SplitterDistance = 274;
+			splitMessage.SplitterDistance = 238;
 			splitMessage.SplitterWidth = 8;
 			splitMessage.TabIndex = 1;
 			// 
 			// sendBox
 			// 
+			sendBox.ContextMenuStrip = TextBoxMenu;
 			sendBox.Dock = DockStyle.Fill;
 			sendBox.Location = new Point(0, 0);
 			sendBox.Name = "sendBox";
-			sendBox.Size = new Size(672, 285);
+			sendBox.Size = new Size(672, 321);
 			sendBox.TabIndex = 0;
 			sendBox.Text = "";
 			// 
@@ -393,6 +443,7 @@
 			Text = "Mqtt Js 1.0";
 			FormClosing += FormMain_FormClosing;
 			Load += FormMain_Load;
+			TextBoxMenu.ResumeLayout(false);
 			groupServer.ResumeLayout(false);
 			groupMessage.ResumeLayout(false);
 			groupMessage.PerformLayout();
@@ -438,5 +489,10 @@
 		private ToolStripMenuItem 连接断开ToolStripMenuItem;
 		private ToolStripSeparator toolStripMenuItem3;
 		private ToolStripMenuItem 启用禁用ToolStripMenuItem;
+		private ContextMenuStrip TextBoxMenu;
+		private ToolStripMenuItem CopyMenuItem;
+		private ToolStripMenuItem PasteMenuItem;
+		private ToolStripMenuItem CutMenuItem;
+		private CheckBox cbAutoJson;
 	}
 }
